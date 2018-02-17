@@ -1,0 +1,2 @@
+# algtmapi
+aikatsu lgtm api
