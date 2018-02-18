@@ -41,6 +41,7 @@
     "dslengine",
     "goatest",
     "middleware",
+    "middleware/gzip",
     "uuid"
   ]
   revision = "fc29b77a218fb9e190849c81911ed12d25e771de"
@@ -103,6 +104,12 @@
   packages = ["."]
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   branch = "master"
@@ -186,6 +193,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2120bb58c978325896b2fd2ef5cc4a6abb618a39f29cdffd29ec2001d886006c"
+  inputs-digest = "cb8832d847d1c88e6ad9e31c1ba5cdf1f5fa5fc41518d15be8adf7adb334c456"
   solver-name = "gps-cdcl"
   solver-version = 1
