@@ -9,6 +9,7 @@ import (
 	"compress/gzip"
 	"flag"
 
+	"github.com/deadcheat/goacors"
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/middleware"
 	gm "github.com/goadesign/goa/middleware/gzip"
@@ -17,6 +18,9 @@ import (
 func main() {
 	// Create service
 	service := goa.New("algtmapi")
+
+	// cors
+	service.Use(goacors.WithConfig(service, &env.CorsConf))
 
 	// Mount middleware
 	service.Use(middleware.RequestID())

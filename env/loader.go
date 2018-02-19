@@ -22,6 +22,9 @@ var (
 	Server   *config.ServerConfig
 	CorsConf goacors.GoaCORSConfig
 
+	// Aikatup
+	Aikatup *config.AikatsupConfig
+
 	// Time設定
 	DataTimeLayout string
 )
@@ -65,6 +68,7 @@ func setTomlConfig() {
 	// 設定読み込み
 	_ = viper.UnmarshalKey("server", &Server)
 	_ = viper.UnmarshalKey("cors", &CorsConf)
+	_ = viper.UnmarshalKey("aikatup", &Aikatup)
 }
 
 func setTimeConfig() {

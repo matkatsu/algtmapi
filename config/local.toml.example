@@ -17,3 +17,6 @@ allowmethods = [
     "PATCH",
     "DELETE"
 ]
+
+[aikatup]
+BaseURL = "http://aikatsup.com/api/"

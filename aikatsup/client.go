@@ -1,24 +1,15 @@
 package aikatsup
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
-	"path"
-	"runtime"
+	"errors"
+	"math/rand"
 
-	"github.com/pkg/errors"
+	"github.com/parnurzeal/gorequest"
 )
 
 // Client struct
 type Client struct {
-	URL        *url.URL
-	HTTPClient *http.Client
-	Logger     *log.Logger
+	BaseURL string
 }
 
 // SearchResult 検索結果
@@ -40,70 +31,45 @@ type Image struct {
 	URL    string `json:"url"`
 }
 
-// NewClient constructor
-func NewClient(urlStr string, logger *log.Logger) (*Client, error) {
-	parsedURL, err := url.ParseRequestURI(urlStr)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse url: %s", urlStr)
-	}
-	var discardLogger = log.New(ioutil.Discard, "", log.LstdFlags)
-	if logger == nil {
-		logger = discardLogger
-	}
-
-	client := &Client{
-		URL:        parsedURL,
-		HTTPClient: &http.Client{},
-		Logger:     logger,
-	}
-
-	return client, err
-}
-
-var userAgent = fmt.Sprintf("ALGTMGoClient/%s (%s)", "v1", runtime.Version())
-
-func (c *Client) newRequest(method, spath string, query url.Values, body io.Reader) (*http.Request, error) {
-	u := *c.URL
-	u.Path = path.Join(c.URL.Path, spath)
-	req, err := http.NewRequest(method, u.String(), body)
-	req.URL.RawQuery = query.Encode()
-
-	if err != nil {
-		return nil, err
-	}
-	// req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("User-Agent", userAgent)
-
-	return req, nil
-}
-
-func decodeBody(resp *http.Response, out interface{}) error {
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	return decoder.Decode(out)
-}
-
 // GetSearchResult 検索結果を取得
-func (c *Client) GetSearchResult(word string) (*SearchResult, error) {
-	values := url.Values{}
-	values.Add("words", word)
-
-	req, err := c.newRequest("GET", "search", values, nil)
-	if err != nil {
-		return nil, err
+func (c *Client) GetSearchResult(word string) ([]ResultUnit, error) {
+	// wordが空ならi、infoからランダムに9件取得(chanel)
+	var r SearchResult
+	request := gorequest.New()
+	resp, _, errs := request.
+		Get(c.getRequestURL("v1/search")).
+		Query("words=" + word).
+		EndStruct(&r)
+	if resp.StatusCode != 200 {
+		return r.Result, errors.New("failed")
+	}
+	for _, err := range errs {
+		if err != nil {
+			return r.Result, err
+		}
 	}
 
-	res, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
+	// 結果が9個より少なければそのまま返す
+	if len(r.Result) < 9 {
+		return r.Result, nil
 	}
 
-	// Check status code here…
+	var res []ResultUnit
+	// 9個以上ならシャッフル
+	shuffle(r.Result)
+	res = r.Result[0:9]
+	return res, nil
+}
 
-	var search SearchResult
-	if err := decodeBody(res, &search); err != nil {
-		return nil, err
+func (c *Client) getRequestURL(path string) string {
+	return c.BaseURL + path
+}
+
+// シャッフルする
+func shuffle(data []ResultUnit) {
+	n := len(data)
+	for i := n - 1; i >= 0; i-- {
+		j := rand.Intn(i + 1)
+		data[i], data[j] = data[j], data[i]
 	}
-
-	return &search, nil
 }
