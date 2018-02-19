@@ -31,6 +31,8 @@ type Image struct {
 	URL    string `json:"url"`
 }
 
+const limit = 10
+
 // GetSearchResult 検索結果を取得
 func (c *Client) GetSearchResult(word string) ([]ResultUnit, error) {
 	// wordが空ならi、infoからランダムに9件取得(chanel)
@@ -49,15 +51,15 @@ func (c *Client) GetSearchResult(word string) ([]ResultUnit, error) {
 		}
 	}
 
-	// 結果が9個より少なければそのまま返す
-	if len(r.Result) < 9 {
+	// 結果が10個より少なければそのまま返す
+	if len(r.Result) < limit {
 		return r.Result, nil
 	}
 
 	var res []ResultUnit
-	// 9個以上ならシャッフル
+	// 10個以上ならシャッフル
 	shuffle(r.Result)
-	res = r.Result[0:9]
+	res = r.Result[0:limit]
 	return res, nil
 }
 
